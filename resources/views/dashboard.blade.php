@@ -7,7 +7,15 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="mb-6 flex items-center space-x-4">
+
+            @if (session('success'))
+                <div
+                    class="mb-4 p-4 @if (session('delete')) bg-red-200 border border-red-400 text-red-700 @else bg-green-200 border border-green-400 text-green-700 @endif rounded-md">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <div class="mb-6 flex items-center justify-between space-x-4">
                 <form id="search-form" method="GET" action="{{ route('dashboard') }}" class="flex space-x-4 w-full">
                     <div class="w-1/4">
                         <x-input-label for="search" :value="__('Search by Title')" />
@@ -30,7 +38,7 @@
                 </form>
 
                 <a href="{{ route('tasks.create') }}">
-                    <x-primary-button class="w-32 pt-2 mt-8">{{ __('Create Task') }}</x-primary-button>
+                    <x-primary-button>{{ __('Create New Task') }}</x-primary-button>
                 </a>
             </div>
 
@@ -80,5 +88,4 @@
 
         </div>
     </div>
-
 </x-app-layout>

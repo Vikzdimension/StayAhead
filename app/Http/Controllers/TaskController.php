@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class TaskController extends Controller
 {
@@ -23,8 +25,11 @@ class TaskController extends Controller
             $tasksQuery->where('status', $request->status);
         }
     
-        $tasks = $tasksQuery->paginate(10);
-    
+        $cacheKey = 'tasks_' . auth()->id();
+        $tasks = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($tasksQuery) {
+            return $tasksQuery->paginate(10);
+        });
+
         return view('dashboard', compact('tasks'));
     }
     
@@ -47,7 +52,7 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'status' => 'required|boolean',
             'priority' => 'required|in:low,medium,high',
-            'due_date' => 'nullable|date',
+            'due_date' => 'nullable|date|after_or_equal:' . now()->toDateString(),
         ]);
 
         auth()->user()->tasks()->create([
@@ -57,6 +62,8 @@ class TaskController extends Controller
             'due_date' => $request->due_date,
         ]);
 
+        Cache::forget('tasks_' . auth()->id());
+        
         return redirect()->route('dashboard')->with('success', 'Task created successfully.');
     }
 
@@ -78,11 +85,14 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'status' => 'required|boolean',
             'priority' => 'required|in:low,medium,high',
-            'due_date' => 'nullable|date',
+            'due_date' => 'nullable|date|after_or_equal:' . now()->toDateString(),
         ]);
 
         $this->authorize('update', $task);
+
         $task->update($validated);
+        Cache::forget('tasks_' . auth()->id());
+        
         return redirect()->route('dashboard')->with('success', 'Task updated successfully!');
     }
 
@@ -93,6 +103,10 @@ class TaskController extends Controller
     {
         $this->authorize('delete', $task);
         $task->delete();
-        return redirect()->route('dashboard')->with('success', 'Task deleted successfully.');
+    
+        Cache::forget('tasks_' . auth()->id());
+    
+        return redirect()->route('dashboard')->with('success', 'Task deleted successfully.')->with('delete', true);
     }
+    
 }

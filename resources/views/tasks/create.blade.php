@@ -36,12 +36,15 @@
                         <x-input-error class="mt-2" :messages="$errors->get('priority')" />
                     </div>
 
-                    <div class="mb-4">
+                    <div>
                         <x-input-label for="due_date" :value="__('Due Date')" />
                         <x-text-input id="due_date" name="due_date" type="date" class="mt-1 block w-full"
-                            value="{{ old('due_date') }}" />
-                        <x-input-error class="mt-2" :messages="$errors->get('due_date')" />
+                            value="{{ old('due_date', $task->due_date ?? '') }}" />
+                        @error('due_date')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
+
 
                     <div class="flex justify-end">
                         <x-primary-button>{{ __(key: 'Create Task') }}</x-primary-button>
