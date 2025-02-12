@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->integer('status')->default(0);
+            $table->enum('priority', ['low', 'medium', 'high'])->default('medium'); 
+            $table->date('due_date')->nullable();
             $table->timestamps();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade'); // Foreign key reference to users

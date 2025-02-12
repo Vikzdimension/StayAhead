@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class TaskController extends Controller
 {
@@ -33,11 +34,18 @@ class TaskController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'status' => 'required|boolean',
+            'priority' => 'required|in:low,medium,high',
+            'due_date' => 'nullable|date',
         ]);
 
+        
+
+        // Create the task for the authenticated user
         auth()->user()->tasks()->create([
             'title' => $request->title,
             'status' => $request->status,
+            'priority' => $request->priority,
+            'due_date' => $request->due_date,
         ]);
 
         return redirect()->route('dashboard')->with('success', 'Task created successfully.');
@@ -60,15 +68,15 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'status' => 'required|boolean',
+            'priority' => 'required|in:low,medium,high',
+            'due_date' => 'nullable|date',
         ]);
 
         $this->authorize('update', $task);
-
         $task->update($validated);
-
         return redirect()->route('dashboard')->with('success', 'Task updated successfully!');
     }
-    
+
     /**
      * Remove the specified task from storage.
      */
@@ -76,7 +84,6 @@ class TaskController extends Controller
     {
         $this->authorize('delete', $task);
         $task->delete();
-
         return redirect()->route('dashboard')->with('success', 'Task deleted successfully.');
     }
 }

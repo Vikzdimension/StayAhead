@@ -9,7 +9,12 @@ class Task extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'status', 'user_id'];
+    protected $fillable = ['title', 'status', 'user_id', 'priority', 'due_date'];
+
+    protected $casts = [
+        'status' => 'boolean',
+        'due_date' => 'date',
+    ];
 
     // Define the relationship with the User model
     public function user()
