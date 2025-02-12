@@ -10,14 +10,13 @@
             <div class="bg-white shadow-md rounded-lg overflow-hidden">
                 <form method="POST" action="{{ route('tasks.store') }}" class="p-6">
                     @csrf
-                    <!-- Task Title -->
                     <div class="mb-4">
                         <x-input-label for="title" :value="__('Task Title')" />
-                        <x-text-input id="title" name="title" type="text" class="mt-1 block w-full" value="{{ old('title') }}" required autofocus />
+                        <x-text-input id="title" name="title" type="text" class="mt-1 block w-full"
+                            value="{{ old('title') }}" required autofocus />
                         <x-input-error class="mt-2" :messages="$errors->get('title')" />
                     </div>
 
-                    <!-- Task Status -->
                     <div class="mb-4">
                         <x-input-label for="status" :value="__('Status')" />
                         <select id="status" name="status" class="mt-1 block w-full">
@@ -27,7 +26,6 @@
                         <x-input-error class="mt-2" :messages="$errors->get('status')" />
                     </div>
 
-                    <!-- Task Priority -->
                     <div class="mb-4">
                         <x-input-label for="priority" :value="__('Priority')" />
                         <select id="priority" name="priority" class="mt-1 block w-full">
@@ -38,15 +36,15 @@
                         <x-input-error class="mt-2" :messages="$errors->get('priority')" />
                     </div>
 
-                    <!-- Task Due Date -->
                     <div class="mb-4">
                         <x-input-label for="due_date" :value="__('Due Date')" />
-                        <x-text-input id="due_date" name="due_date" type="date" class="mt-1 block w-full" value="{{ old('due_date') }}" />
+                        <x-text-input id="due_date" name="due_date" type="date" class="mt-1 block w-full"
+                            value="{{ old('due_date') }}" />
                         <x-input-error class="mt-2" :messages="$errors->get('due_date')" />
                     </div>
 
                     <div class="flex justify-end">
-                        <x-primary-button>{{ __('Create Task') }}</x-primary-button>
+                        <x-primary-button>{{ __(key: 'Create Task') }}</x-primary-button>
                     </div>
                 </form>
             </div>

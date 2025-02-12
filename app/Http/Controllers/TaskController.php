@@ -11,12 +11,24 @@ class TaskController extends Controller
     /**
      * Display a listing of the tasks.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = auth()->user()->tasks()->paginate(10);
-
+        $tasksQuery = auth()->user()->tasks();
+    
+        if ($request->has('search') && $request->search !== '') {
+            $tasksQuery->where('title', 'like', '%' . $request->search . '%');
+        }
+    
+        if ($request->has('status') && in_array($request->status, ['0', '1'])) {
+            $tasksQuery->where('status', $request->status);
+        }
+    
+        $tasks = $tasksQuery->paginate(10);
+    
         return view('dashboard', compact('tasks'));
     }
+    
+    
 
     /**
      * Show the form for creating a new task.
@@ -38,9 +50,6 @@ class TaskController extends Controller
             'due_date' => 'nullable|date',
         ]);
 
-        
-
-        // Create the task for the authenticated user
         auth()->user()->tasks()->create([
             'title' => $request->title,
             'status' => $request->status,
