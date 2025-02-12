@@ -25,6 +25,11 @@ class TaskController extends Controller
             $tasksQuery->where('status', $request->status);
         }
     
+        if ($request->wantsJson()) {
+            $tasks = $tasksQuery->paginate(10);
+            return response()->json($tasks);
+        }
+                
         $cacheKey = 'tasks_' . auth()->id();
         $tasks = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($tasksQuery) {
             return $tasksQuery->paginate(10);
