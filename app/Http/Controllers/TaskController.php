@@ -12,7 +12,7 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $tasks = auth()->user()->tasks;
+        $tasks = auth()->user()->tasks()->paginate(10);
 
         return view('dashboard', compact('tasks'));
     }
@@ -48,10 +48,7 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
-        if ($task->user_id !== auth()->user()->id) {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
-        }
-
+        $this->authorize('update', $task);
         return view('tasks.edit', compact('task'));
     }
 
@@ -60,32 +57,24 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'status' => 'required|boolean',
         ]);
 
-        if ($task->user_id !== auth()->id()) {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
-        }
+        $this->authorize('update', $task);
 
-        $task->update([
-            'title' => $request->title,
-            'status' => $request->status,
-        ]);
+        $task->update($validated);
 
-        return redirect()->route('dashboard')->with('success', 'Task updated successfully.');
+        return redirect()->route('dashboard')->with('success', 'Task updated successfully!');
     }
-
+    
     /**
      * Remove the specified task from storage.
      */
     public function destroy(Task $task)
     {
-        if ($task->user_id !== auth()->id()) {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
-        }
-
+        $this->authorize('delete', $task);
         $task->delete();
 
         return redirect()->route('dashboard')->with('success', 'Task deleted successfully.');

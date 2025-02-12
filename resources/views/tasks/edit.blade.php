@@ -7,14 +7,15 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <form method="POST" action="{{ route('tasks.update', $task) }}">
-                    @csrf
-                    @method('PUT')
 
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <form method="POST" action="{{ route('tasks.update', $task) }}" class="p-6">
+                    @csrf
+                    @method('PATCH')
+                    
                     <div class="mb-4">
                         <x-input-label for="title" :value="__('Task Title')" />
-                        <x-text-input id="title" name="title" type="text" class="mt-1 block w-full" value="{{ $task->title }}" required />
+                        <x-text-input id="title" name="title" type="text" class="mt-1 block w-full" value="{{ old('title', $task->title) }}" required autofocus />
                         <x-input-error class="mt-2" :messages="$errors->get('title')" />
                     </div>
 
@@ -32,6 +33,7 @@
                     </div>
                 </form>
             </div>
+
         </div>
     </div>
 </x-app-layout>
