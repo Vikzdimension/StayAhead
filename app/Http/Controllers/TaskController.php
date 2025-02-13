@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 
 class TaskController extends Controller
@@ -16,32 +14,27 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $tasksQuery = auth()->user()->tasks();
-    
+        
         if ($request->has('search') && $request->search !== '') {
             $tasksQuery->where('title', 'like', '%' . $request->search . '%');
         }
-    
-        if ($request->has('status') && in_array($request->status, ['0', '1'])) {
+
+        if ($request->get('status', 'all') !== 'all') {
             $tasksQuery->where('status', $request->status);
         }
-    
-        $cacheKey = 'tasks_' . auth()->id() . '_search_' . md5($request->get('search', '')) . '_status_' . md5($request->get('status', ''));
-    
+
+        $cacheKey = $this->generateCacheKey($request);
+
         if ($request->wantsJson()) {
-            $tasks = $tasksQuery->paginate(10);
-            return response()->json($tasks);
+            return response()->json($tasksQuery->paginate(10));
         }
-    
+
         $tasks = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($tasksQuery) {
             return $tasksQuery->paginate(10);
         });
-    
+
         return view('dashboard', compact('tasks'));
     }
-    
-    
-    
-    
 
     /**
      * Show the form for creating a new task.
@@ -56,12 +49,7 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'status' => 'required|boolean',
-            'priority' => 'required|in:low,medium,high',
-            'due_date' => 'nullable|date|after_or_equal:' . now()->toDateString(),
-        ]);
+        $this->validateTask($request);
     
         $task = auth()->user()->tasks()->create([
             'title' => $request->title,
@@ -70,21 +58,16 @@ class TaskController extends Controller
             'due_date' => $request->due_date,
         ]);
     
-        $cacheKey = 'tasks_' . auth()->id() . 
-                    '_search_' . md5($request->get('search', '')) . 
-                    '_status_' . md5($request->get('status', ''));
-    
-        Cache::forget($cacheKey);
+        $this->clearRelevantCacheKeys($request);
     
         return redirect()
             ->route('dashboard', [
-                'search' => $request->search, 
+                'search' => $request->search,
                 'status' => $request->status
             ])
             ->with('success', 'Task created successfully.');
     }
     
-
     /**
      * Show the form for editing the specified task.
      */
@@ -99,22 +82,13 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'status' => 'required|boolean',
-            'priority' => 'required|in:low,medium,high',
-            'due_date' => 'nullable|date|after_or_equal:' . now()->toDateString(),
-        ]);
+        $this->validateTask($request);
     
         $this->authorize('update', $task);
     
-        $task->update($validated);
+        $task->update($request->only(['title', 'status', 'priority', 'due_date']));
     
-        $cacheKey = 'tasks_' . auth()->id() . 
-                    '_search_' . md5($request->get('search', '')) . 
-                    '_status_' . md5($request->get('status', ''));
-    
-        Cache::forget($cacheKey);
+        $this->clearRelevantCacheKeys($request);
     
         return redirect()
             ->route('dashboard', [
@@ -123,7 +97,6 @@ class TaskController extends Controller
             ])
             ->with('success', 'Task updated successfully!');
     }
-    
 
     /**
      * Remove the specified task from storage.
@@ -131,13 +104,10 @@ class TaskController extends Controller
     public function destroy(Task $task)
     {
         $this->authorize('delete', $task);
+    
         $task->delete();
     
-        $cacheKey = 'tasks_' . auth()->id() . 
-                    '_search_' . md5(request('search', '')) . 
-                    '_status_' . md5(request('status', ''));
-    
-        Cache::forget($cacheKey);
+        $this->clearRelevantCacheKeys(request());
     
         return redirect()
             ->route('dashboard', [
@@ -148,5 +118,45 @@ class TaskController extends Controller
             ->with('delete', true);
     }
     
-    
+    /**
+     * Generate cache key based on request parameters.
+     */
+    protected function generateCacheKey(Request $request)
+    {
+        $status = $request->get('status', 'all');
+        $search = $request->get('search', '');
+
+        return 'tasks_' . auth()->id() .
+               '_search_' . md5($search) .
+               '_status_' . $status;
+    }
+
+    /**
+     * Clear relevant cache keys based on request parameters.
+     */
+    protected function clearRelevantCacheKeys(Request $request)
+    {
+        $statuses = ['0', '1', 'all'];
+        $search = $request->get('search', '');
+
+        foreach ($statuses as $status) {
+            $cacheKey = 'tasks_' . auth()->id() .
+                        '_search_' . md5($search) .
+                        '_status_' . $status;
+            Cache::forget($cacheKey);
+        }
+    }
+
+    /**
+     * Validate task data for store and update.
+     */
+    protected function validateTask(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'status' => 'required|boolean',
+            'priority' => 'required|in:low,medium,high',
+            'due_date' => 'nullable|date|after_or_equal:' . now()->toDateString(),
+        ]);
+    }
 }

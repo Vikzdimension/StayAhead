@@ -51,7 +51,7 @@ class TaskDueDateNotification extends Mailable
             view: 'emails.task_due_date_notification',
             with: [
                 'task' => $this->task,
-                'user' => auth()->user()->name,
+                'user' => auth()->user()->name ?? 'User',
             ]
         );
     }

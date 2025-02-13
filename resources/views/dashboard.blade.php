@@ -29,22 +29,23 @@
 
                     <div class="w-1/4">
                         <x-input-label for="status" :value="__('Status')" />
-                        <select name="status" id="status" class="mt-1 block w-full">
-                            <option value="">All Status</option>
+                        <select name="status" id="status" class="mt-1 block w-full" onchange="this.form.submit()">
+                            <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>All Status
+                            </option>
                             <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Completed</option>
                             <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Pending</option>
                         </select>
                     </div>
 
                     <div class="flex items-end">
-                        <x-primary-button type="submit" id="search-btn" class="w-full md:w-auto">
+                        <x-primary-button type="submit" id="search-btn" class="w-full md:w-auto fixed-size-button">
                             <span id="search-spinner" class="hidden mr-2 spinner"></span>{{ __('Search') }}
                         </x-primary-button>
                     </div>
                 </form>
 
                 <a href="{{ route('tasks.create') }}"
-                    class="inline-flex items-center mt-7 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    class="w-full md:w-auto fixed-size-button inline-flex items-center mt-7 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                     <button type="submit" class="leading-normal w-28 h-8">{{ __('Create Task') }}</button>
                 </a>
             </div>
@@ -96,6 +97,31 @@
         </div>
     </div>
 
+    <style>
+        .fixed-size-button {
+            width: 120px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const flashMessage = document.getElementById('flash-message');
@@ -104,8 +130,7 @@
             if (flashMessage) {
                 console.log('Flash message found, fading out in 2 seconds');
                 setTimeout(() => {
-                    flashMessage.style.transition =
-                        'opacity 0.7s ease-out, filter 0.7s ease-out';
+                    flashMessage.style.transition = 'opacity 0.7s ease-out, filter 0.7s ease-out';
                     flashMessage.style.opacity = '0';
                     flashMessage.style.filter = 'blur(3px)';
                     setTimeout(() => flashMessage.style.display = 'none', 500);
@@ -118,8 +143,7 @@
                 closeButton.addEventListener('click', () => {
                     if (flashMessage) {
                         console.log('Manually closing flash message');
-                        flashMessage.style.transition =
-                            'opacity 0.7s ease-out, filter 0.7s ease-out';
+                        flashMessage.style.transition = 'opacity 0.7s ease-out, filter 0.7s ease-out';
                         flashMessage.style.opacity = '0';
                         flashMessage.style.filter = 'blur(3px)';
                         setTimeout(() => flashMessage.style.display = 'none', 500);
