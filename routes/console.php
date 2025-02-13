@@ -12,5 +12,3 @@ Artisan::command('inspire', function () {
 Artisan::command('app:notify-users-about-due-taskss', function () {
     $this->call(NotifyUsersAboutDueTasks::class);
 });
-
-$schedule->command('app:notify-users-about-due-tasks')->daily();
