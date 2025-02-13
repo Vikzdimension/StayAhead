@@ -25,18 +25,21 @@ class TaskController extends Controller
             $tasksQuery->where('status', $request->status);
         }
     
+        $cacheKey = 'tasks_' . auth()->id() . '_search_' . md5($request->get('search', '')) . '_status_' . md5($request->get('status', ''));
+    
         if ($request->wantsJson()) {
             $tasks = $tasksQuery->paginate(10);
             return response()->json($tasks);
         }
-                
-        $cacheKey = 'tasks_' . auth()->id();
+    
         $tasks = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($tasksQuery) {
             return $tasksQuery->paginate(10);
         });
-
+    
         return view('dashboard', compact('tasks'));
     }
+    
+    
     
     
 
@@ -59,18 +62,28 @@ class TaskController extends Controller
             'priority' => 'required|in:low,medium,high',
             'due_date' => 'nullable|date|after_or_equal:' . now()->toDateString(),
         ]);
-
-        auth()->user()->tasks()->create([
+    
+        $task = auth()->user()->tasks()->create([
             'title' => $request->title,
             'status' => $request->status,
             'priority' => $request->priority,
             'due_date' => $request->due_date,
         ]);
-
-        Cache::forget('tasks_' . auth()->id());
-        
-        return redirect()->route('dashboard')->with('success', 'Task created successfully.');
+    
+        $cacheKey = 'tasks_' . auth()->id() . 
+                    '_search_' . md5($request->get('search', '')) . 
+                    '_status_' . md5($request->get('status', ''));
+    
+        Cache::forget($cacheKey);
+    
+        return redirect()
+            ->route('dashboard', [
+                'search' => $request->search, 
+                'status' => $request->status
+            ])
+            ->with('success', 'Task created successfully.');
     }
+    
 
     /**
      * Show the form for editing the specified task.
@@ -92,14 +105,25 @@ class TaskController extends Controller
             'priority' => 'required|in:low,medium,high',
             'due_date' => 'nullable|date|after_or_equal:' . now()->toDateString(),
         ]);
-
+    
         $this->authorize('update', $task);
-
+    
         $task->update($validated);
-        Cache::forget('tasks_' . auth()->id());
-        
-        return redirect()->route('dashboard')->with('success', 'Task updated successfully!');
+    
+        $cacheKey = 'tasks_' . auth()->id() . 
+                    '_search_' . md5($request->get('search', '')) . 
+                    '_status_' . md5($request->get('status', ''));
+    
+        Cache::forget($cacheKey);
+    
+        return redirect()
+            ->route('dashboard', [
+                'search' => $request->search, 
+                'status' => $request->status
+            ])
+            ->with('success', 'Task updated successfully!');
     }
+    
 
     /**
      * Remove the specified task from storage.
@@ -109,9 +133,20 @@ class TaskController extends Controller
         $this->authorize('delete', $task);
         $task->delete();
     
-        Cache::forget('tasks_' . auth()->id());
+        $cacheKey = 'tasks_' . auth()->id() . 
+                    '_search_' . md5(request('search', '')) . 
+                    '_status_' . md5(request('status', ''));
     
-        return redirect()->route('dashboard')->with('success', 'Task deleted successfully.')->with('delete', true);
+        Cache::forget($cacheKey);
+    
+        return redirect()
+            ->route('dashboard', [
+                'search' => request('search'),
+                'status' => request('status'),
+            ])
+            ->with('success', 'Task deleted successfully.')
+            ->with('delete', true);
     }
+    
     
 }
