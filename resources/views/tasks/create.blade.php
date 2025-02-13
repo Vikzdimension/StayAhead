@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-md rounded-lg overflow-hidden">
                 <form method="POST" action="{{ route('tasks.store') }}" class="p-6">
                     @csrf
@@ -36,7 +36,7 @@
                         <x-input-error class="mt-2" :messages="$errors->get('priority')" />
                     </div>
 
-                    <div>
+                    <div class="mb-4">
                         <x-input-label for="due_date" :value="__('Due Date')" />
                         <x-text-input id="due_date" name="due_date" type="date" class="mt-1 block w-full"
                             value="{{ old('due_date', $task->due_date ?? '') }}" />
@@ -45,9 +45,8 @@
                         @enderror
                     </div>
 
-
-                    <div class="flex justify-end">
-                        <x-primary-button>{{ __(key: 'Create Task') }}</x-primary-button>
+                    <div class="flex justify-end mt-5">
+                        <x-primary-button>{{ __('Create Task') }}</x-primary-button>
                     </div>
                 </form>
             </div>

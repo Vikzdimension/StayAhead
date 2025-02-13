@@ -7,11 +7,15 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-
             @if (session('success'))
-                <div
-                    class="mb-4 p-4 @if (session('delete')) bg-red-200 border border-red-400 text-red-700 @else bg-green-200 border border-green-400 text-green-700 @endif rounded-md">
-                    {{ session('success') }}
+                <div id="flash-message"
+                    class="mb-4 p-4 @if (session('delete')) bg-red-200 border border-red-400 text-red-700 @else bg-green-200 border border-green-400 text-green-700 @endif rounded-md shadow-lg transition-opacity opacity-100"
+                    role="alert" aria-live="assertive" aria-atomic="true" aria-hidden="false">
+                    <div class="flex justify-between items-center">
+                        <p>{{ session('success') }}</p>
+                        <button id="close-btn" class="text-xl ml-4 text-gray-500 hover:text-gray-700"
+                            aria-label="Close notification">&times;</button>
+                    </div>
                 </div>
             @endif
 
@@ -33,12 +37,15 @@
                     </div>
 
                     <div class="flex items-end">
-                        <x-primary-button type="submit">{{ __('Search') }}</x-primary-button>
+                        <x-primary-button type="submit" id="search-btn" class="w-full md:w-auto">
+                            <span id="search-spinner" class="hidden mr-2 spinner"></span>{{ __('Search') }}
+                        </x-primary-button>
                     </div>
                 </form>
 
-                <a href="{{ route('tasks.create') }}">
-                    <x-primary-button>{{ __('Create New Task') }}</x-primary-button>
+                <a href="{{ route('tasks.create') }}"
+                    class="inline-flex items-center mt-7 bg-gray-800 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <button type="submit" class="leading-normal w-28 h-8">{{ __('Create Task') }}</button>
                 </a>
             </div>
 
@@ -82,10 +89,55 @@
                 </table>
 
                 <div class="px-6 py-4">
-                    {{ $tasks->links() }}
+                    {{ $tasks->appends(request()->except('page'))->links() }}
                 </div>
             </div>
 
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const flashMessage = document.getElementById('flash-message');
+            const closeButton = document.getElementById('close-btn');
+
+            if (flashMessage) {
+                console.log('Flash message found, fading out in 2 seconds');
+                setTimeout(() => {
+                    flashMessage.style.transition =
+                        'opacity 0.7s ease-out, filter 0.7s ease-out';
+                    flashMessage.style.opacity = '0';
+                    flashMessage.style.filter = 'blur(3px)';
+                    setTimeout(() => flashMessage.style.display = 'none', 500);
+                    console.log('Flash message faded out and blurred');
+                }, 2000);
+            }
+
+            if (closeButton) {
+                console.log('Close button found');
+                closeButton.addEventListener('click', () => {
+                    if (flashMessage) {
+                        console.log('Manually closing flash message');
+                        flashMessage.style.transition =
+                            'opacity 0.7s ease-out, filter 0.7s ease-out';
+                        flashMessage.style.opacity = '0';
+                        flashMessage.style.filter = 'blur(3px)';
+                        setTimeout(() => flashMessage.style.display = 'none', 500);
+                    }
+                });
+            }
+
+            const searchForm = document.getElementById('search-form');
+            const searchButton = document.getElementById('search-btn');
+            const searchSpinner = document.getElementById('search-spinner');
+
+            if (searchForm && searchButton && searchSpinner) {
+                searchForm.addEventListener('submit', function() {
+                    searchButton.disabled = true;
+                    searchSpinner.classList.remove('hidden');
+                    console.log('Search initiated...');
+                });
+            }
+        });
+    </script>
 </x-app-layout>
