@@ -29,6 +29,21 @@ class TaskDueDateNotification extends Mailable
     }
 
     /**
+     * Build the message.
+     *
+     * @return $this
+     */
+    public function build()
+    {
+        return $this->subject('Task Due Date Notification')
+                    ->view('emails.task_due_date_notification')
+                    ->with([
+                        'task' => $this->task,
+                        'user' => $this->task->user->name ?? 'User',
+                    ]);
+    
+    }
+    /**
      * Get the message envelope.
      *
      * @return \Illuminate\Mail\Mailables\Envelope

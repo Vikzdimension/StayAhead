@@ -27,7 +27,7 @@ class NotifyUsersAboutDueTasks extends Command
     public function handle()
     {
         $tasks = Task::where('due_date', '=', now()->addDays(2)->toDateString())
-                     ->where('status', '!=', 'completed')
+                     ->where('status', 1)
                      ->get();
 
         foreach ($tasks as $task) {

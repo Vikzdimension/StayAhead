@@ -3,15 +3,18 @@
 namespace App\Jobs;
 
 use App\Models\Task;
+use App\Mail\TaskDueDateNotification;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Facades\Log;
 
 class NotifyUserAboutTaskDueDate implements ShouldQueue
 {
-    use Queueable;
-
+    use InteractsWithQueue, Queueable, SerializesModels;
+    
     protected $task;
 
     /**
@@ -27,14 +30,15 @@ class NotifyUserAboutTaskDueDate implements ShouldQueue
      */
     public function handle(): void
     {
-        $tasks = Task::where('due_date', '=', now()->addDays(2)->toDateString())
-            ->where('status', '!=', 'completed')
-            ->get();
+        // Send email to the user associated with the task
+        Mail::to($this->task->user->email)
+            ->send(new TaskDueDateNotification($this->task));
+        
+        Log::info('Notification dispatched for task due in 2 days: Task ID ' . $this->task->id);
+    }
 
-        foreach ($tasks as $task) {
-            NotifyUserAboutTaskDueDate::dispatch($task);
-        }
-
-        Log::info('Notifications dispatched for tasks due in 2 days.');
+    public function getTask()
+    {
+        return $this->task;
     }
 }
