@@ -33,4 +33,4 @@
             <directory>tests</directory>
         </include>
     </source>
-z</phpunit>
+</phpunit>
