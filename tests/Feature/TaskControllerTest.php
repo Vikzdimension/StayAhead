@@ -2,16 +2,29 @@
 
 namespace Tests\Feature;
 
+use Mockery;
 use Tests\TestCase;
 use App\Models\Task;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 
 class TaskControllerTest extends TestCase
 {
     use RefreshDatabase;
+    
+    protected function setUp(): void
+    {
+        parent::setUp();
 
+        $this->withoutMiddleware(VerifyCsrfToken::class);
+
+        Session::start();
+    }
+        
     /**
      * Test to check if tasks can be filtered by title.
      */
@@ -47,7 +60,6 @@ class TaskControllerTest extends TestCase
                  ->assertSeeText($task3->title)
                  ->assertDontSeeText($task1->title);
     }
-    
 
     /**
      * Test to check pagination when there are many tasks.
@@ -68,7 +80,6 @@ class TaskControllerTest extends TestCase
     
         $response->assertSee('Next &raquo;');
     }
-    
 
     /**
      * Test if tasks are cached.
@@ -76,19 +87,19 @@ class TaskControllerTest extends TestCase
     public function test_tasks_are_cached()
     {
         $user = User::factory()->create();
-    
         $tasks = Task::factory()->count(2)->create(['user_id' => $user->id]);
-    
-        Cache::shouldReceive('remember')
+
+        $cacheKey = 'tasks_' . $user->id . '_search_' . md5('') . '_status_all';
+
+        $cc = Cache::shouldReceive('remember')
              ->once()
-             ->with('tasks_' . $user->id, \Mockery::any(), \Mockery::any())
+             ->with($cacheKey, Mockery::any(), Mockery::any())
              ->andReturn(collect($tasks));
-        $response = $this->actingAs($user)->get(route('dashboard'));
-        
+
+        $response = $this->actingAs(user: $user)->get(route('dashboard'));
         $response->assertSeeText($tasks[0]->title);
         $response->assertSeeText($tasks[1]->title);
-
+    
         Cache::shouldHaveReceived('remember')->once();
     }
-    
 }
