@@ -13,7 +13,6 @@ class NotifyUserAboutTaskDueDateTest extends TestCase
 {
     use RefreshDatabase;
 
-    #[\PHPUnit\Framework\Attributes\Test]
     public function test_to_dispatches_notifications_for_due_tasks()
     {
         $user = User::factory()->create();

@@ -30,7 +30,6 @@ class NotifyUserAboutTaskDueDate implements ShouldQueue
      */
     public function handle(): void
     {
-        // Send email to the user associated with the task
         Mail::to($this->task->user->email)
             ->send(new TaskDueDateNotification($this->task));
         
