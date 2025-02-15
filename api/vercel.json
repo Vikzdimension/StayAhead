@@ -1,20 +1,40 @@
 {
     "version": 2,
-    "framework": null,
-    "functions": {
-        "api/index.php": { "runtime": "vercel-php@0.6.0" }
-    },
+    "builds": [
+        {
+            "src": "package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "dist"
+            }
+        },
+        {
+            "src": "public/index.php",
+            "use": "vercel-php@0.5.4"
+        },
+        {
+            "src": "public/storage/**/*",
+            "use": "@vercel/static"
+        }
+    ],
     "routes": [
         {
+            "src": "/dist/(.*)",
+            "headers": {
+                "cache-control": "public,max-age=31536000,immutable"
+            },
+            "dest": "/dist/$1"
+        },
+        {
             "src": "/(.*)",
-            "dest": "/api/index.php"
+            "dest": "public/index.php"
         }
     ],
     "env": {
         "APP_ENV": "production",
         "APP_DEBUG": "true",
         "APP_URL": "https://stay-ahead-p8i3iwwke-vikzdimensions-projects.vercel.app/",
-        "APP_KEY": "base64:D6PJp0ANdkAovx1vyGMKTJCIq0/Ci8FsbLCcREAt9f0=",
+
         "APP_CONFIG_CACHE": "/tmp/config.php",
         "APP_EVENTS_CACHE": "/tmp/events.php",
         "APP_PACKAGES_CACHE": "/tmp/packages.php",

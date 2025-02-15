@@ -10,7 +10,7 @@
         },
         {
             "src": "public/index.php",
-            "use": "vercel-php@0.6.0"
+            "use": "vercel-php@0.5.4"
         },
         {
             "src": "public/storage/**/*",
@@ -34,7 +34,7 @@
         "APP_ENV": "production",
         "APP_DEBUG": "true",
         "APP_URL": "https://stay-ahead-p8i3iwwke-vikzdimensions-projects.vercel.app/",
-        "APP_KEY": "base64:D6PJp0ANdkAovx1vyGMKTJCIq0/Ci8FsbLCcREAt9f0=",
+
         "APP_CONFIG_CACHE": "/tmp/config.php",
         "APP_EVENTS_CACHE": "/tmp/events.php",
         "APP_PACKAGES_CACHE": "/tmp/packages.php",
